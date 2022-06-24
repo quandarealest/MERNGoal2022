@@ -1,15 +1,41 @@
-import React, { useState, useEffect } from 'react'
+
+
+import { useState, useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { FaUser } from 'react-icons/fa'
+import { register, reset } from '../features/auth/authSlice'
+import Spinner from '../components/Spinner'
 
 function Register() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    password2: ''
+    password2: '',
   })
 
   const { name, email, password, password2 } = formData
+
+  const navigate = useNavigate()
+  const dispatch = useDispatch()
+
+  const { user, isLoading, isError, isSuccess, message } = useSelector(
+    (state) => state.auth
+  )
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(message)
+    }
+
+    if (isSuccess || user) {
+      navigate('/')
+    }
+
+    dispatch(reset())
+  }, [user, isError, isSuccess, message, navigate, dispatch])
 
   const onChange = (e) => {
     setFormData((prevState) => ({
@@ -19,63 +45,82 @@ function Register() {
   }
 
   const onSubmit = (e) => {
-    e.preventDefault();
+    e.preventDefault()
+
+    if (password !== password2) {
+      toast.error('Passwords do not match')
+    } else {
+      const userData = {
+        name,
+        email,
+        password,
+      }
+
+      dispatch(register(userData))
+    }
+  }
+
+  if (isLoading) {
+    return <Spinner />
   }
 
   return (
     <>
-      <section className="heading">
+      <section className='heading'>
         <h1>
           <FaUser /> Register
-    </h1>
-        <p>
-          Please create an account
-    </p>
+        </h1>
+        <p>Please create an account</p>
       </section>
-      <section className="form">
+
+      <section className='form'>
         <form onSubmit={onSubmit}>
-          <div className="form-group">
+          <div className='form-group'>
             <input
-              type="text"
+              type='text'
+              className='form-control'
               id='name'
-              className="form-control"
+              name='name'
               value={name}
               placeholder='Enter your name'
               onChange={onChange}
             />
           </div>
-          <div className="form-group">
+          <div className='form-group'>
             <input
-              type="email"
+              type='email'
+              className='form-control'
               id='email'
-              className="form-control"
+              name='email'
               value={email}
               placeholder='Enter your email'
               onChange={onChange}
             />
           </div>
-          <div className="form-group">
+          <div className='form-group'>
             <input
-              type="password"
+              type='password'
+              className='form-control'
               id='password'
-              className="form-control"
+              name='password'
               value={password}
-              placeholder='Enter your password'
+              placeholder='Enter password'
               onChange={onChange}
             />
           </div>
-          <div className="form-group">
+          <div className='form-group'>
             <input
-              type="password"
+              type='password'
+              className='form-control'
               id='password2'
-              className="form-control"
+              name='password2'
               value={password2}
-              placeholder='Re-enter your password'
+              placeholder='Confirm password'
               onChange={onChange}
             />
           </div>
-          <div className="form-group">
-            <button type="submit" className="btn btn-block">
+          <div className='form-group'>
+            <button type='submit' className='btn btn-block'>
               Submit
             </button>
           </div>
